@@ -1,0 +1,16 @@
+Package: PPBF
+Version: 0.0-1
+Date: 2017-04-29
+Title: R Code
+Description: R functions
+Author: Author
+Maintainer: The Author it self <Author@Maintainer.com>
+Depends:
+    R (>= 3.0.0)
+Imports:
+Suggests:
+    devtools
+License: MIT
+URL: https://github.com/nemesa/R-Packeges/PPBF
+LazyData: true
+

@@ -1,0 +1,9 @@
+Generate document (in RStudio): 
+
+#install.packages("devtools")
+library(devtools)
+devtools::document("c:/_WORK_/Git/R-Packeges/PPBF")
+
+
+
+
