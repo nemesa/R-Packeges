@@ -27,7 +27,7 @@ PPBF.ParseDataFromRawPlateData<-function(rowNumber,columnNumber,vectorWithRawDat
     parsedRow <- unlist(strsplit(vectorWithRawData[row], ",")) 
     for(column in 1:(columnNumber+1)){ 
       #set each column one by one in the result dataframe from the parsedRow
-	    if(is.na(strtoi(parsedRow[column])){
+	    if(is.na(strtoi(parsedRow[column]))){
 		    parsedData_DataFrame[row,column]<-as.numeric(parsedRow[column])
 	    } else{
 		    parsedData_DataFrame[row,column]<-parsedRow[column]
