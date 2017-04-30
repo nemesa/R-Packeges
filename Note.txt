@@ -10,15 +10,15 @@ ipak <- function(pkg,isNamedFromGitHub){
     new.pkg <- names(pkg)[!(names(pkg) %in% installed.packages()[, "Package"])]
     if (length(new.pkg))
       install_github(pkg)
+    sapply(names(pkg), require, character.only = TRUE)
   }else {
     new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
     if (length(new.pkg)) 
       install.packages(new.pkg, dependencies = TRUE)
+    sapply(pkg, require, character.only = TRUE)
   }
-  sapply(names(pkg), require, character.only = TRUE)
 }
 
 ipak(c("devtools","ggplot2", "dplyr"),FALSE)
 ipak(c(PPBF="nemesa/R-Packeges/PPBF"),TRUE)
-
 
