@@ -1,0 +1,17 @@
+Package: cytotox
+Version: 0.0-1
+Date: 2017-04-29
+Title: cytotox - Dose-response
+Description: R functions
+Author: Author
+Maintainer: The Author it self <Author@Maintainer.com>
+Depends:
+    R (>= 3.3.3)
+Imports:
+	ggplot2
+Suggests:
+    devtools
+License: MIT
+URL: https://github.com/nemesa/R-Packeges/cytotox
+LazyData: true
+
