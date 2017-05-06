@@ -56,6 +56,62 @@ cytotox.DoCalculations <- function(values) {
 }
 
 
+cytotox.ReadFiles <- function(input.files
+                              ,input.cellLines
+                              ,input.platePositionColumnIndex = 1){
+
+  
+  
+  
+  
+  
+  #res<-cytotox.ReadFiles(input.files=c("c:/_WORK_/R/Citotox/Input/cytotox1.csv"
+  #                                     ,"c:/_WORK_/R/Citotox/Input/cytotox2.csv"
+  #                                     ,"c:/_WORK_/R/Citotox/Input/cytotox3.csv")
+  #                       ,input.cellLines=list(
+  #                         list(Name="DT40 WT",PositionOnPate=c("B","C","D"))
+  #                         ,list(Name="DT40 BRCA1",PositionOnPate=c("E","F","G"))))
+  
+  
+  fileCounter<-1
+  output<-list()    
+  output$ByFile<-list()
+  output$ByCellLine<-list()
+  
+  for(cellLineIterator in 1:length(input.cellLines)){
+    output$ByCellLine[[cellLineIterator]]<-list()
+  }
+  
+  columnCount<-0
+  
+  for(file in input.files){
+    parsedData<-PPBF.Run(file)
+    if(fileCounter==1){
+      columnCount<-parsedData$ColNum
+    }
+    else
+    {
+      if(columnCount!=parsedData$ColNum){
+        stop(paste("error at processing file:'",file,"' plate column is not matching with the first one (",columnCount,")"))
+      }
+    }
+
+    output$ByFile[[fileCounter]]<-parsedData
+
+    cellLineCounter<-1
+    for(cellLineItem in input.cellLines)
+    {
+      data<-parsedData$Data[which(parsedData$Data[,input.platePositionColumnIndex] %in% cellLineItem$PositionOnPate),]
+      output$ByCellLine[[cellLineCounter]][[fileCounter]]<-data
+      cellLineCounter<-cellLineCounter+1
+    }
+    
+    
+    fileCounter<-fileCounter+1
+  }
+  return(output)
+}
+
 cytotox.Run<-function(input.files
                       ,input.cellLines
                       ,input.concentracions
@@ -64,6 +120,7 @@ cytotox.Run<-function(input.files
                       ,input.controllColumnIndex = 12
                       ,input.pozitiveControllColumnIndex = 13
                       ,input.printInfo=TRUE
+                      ,input.calcMode=1
 ){
   if(input.printInfo==TRUE){
     print("input.files")
@@ -80,62 +137,66 @@ cytotox.Run<-function(input.files
     print(input.controllColumnIndex)
     print("input.pozitiveControllColumnIndex")
     print(input.pozitiveControllColumnIndex)
+    print("input.calcMode")
+    print(input.calcMode)
   }
   output<-list() 
-  output$ParsedData<list()
-  fileCounter<-1
-  columnCount<-0
-  unionOfDataRowCounter<-2
-  unionOfData <- data.frame()
-  for(file in input.files){
-    parsedData<-PPBF.Run(file)
-    output$ParsedData[[fileCounter]]<-parsedData
-    if(input.printInfo){print("file:");print(file);print("parsedData");print(parsedData)}
-    if(fileCounter==1){
-      columnCount<-parsedData$ColNum
-      unionOfData<- parsedData$Data
-      unionOfDataRowCounter<-parsedData$RowNum+1
-    }
-    else
-    {
-      if(columnCount!=parsedData$ColNum){
-        stop(paste("error at processing file:'",file,"' plate column is not matching with the first one (",columnCount,")"))
-      }
-      for(rowNum in 1:parsedData$RowNum){
-        for(colNum in 1:(columnCount+1)){
-          unionOfData[unionOfDataRowCounter,colNum]<- parsedData$Data[rowNum,colNum]
-        }
-        unionOfDataRowCounter<-unionOfDataRowCounter+1
-      }
-    }
-    fileCounter<-fileCounter+1
-    
-  }
-  output$UnionOfData<-unionOfData
+  
+  rawData<-cytotox.ReadFiles(input.files,input.cellLines,input.platePositionColumnIndex)
+  
+  output$ParsedData<-rawData$ByFile
+  output$ParsedDataByCellLine<-rawData$ByCellLine
   
   cellLineRawData <- list()
-  cellLineCounter<-1
-  for(cellLineItem in input.cellLines)
+  if(input.calcMode==1)
   {
-    #Filter each plate by cell line
-    cellLineRawData[[cellLineCounter]]<-unionOfData[which(unionOfData[,input.platePositionColumnIndex] %in% cellLineItem$PositionOnPate),]
-    cellLineCounter<-cellLineCounter+1
+    if(input.printInfo==TRUE){print("Do calculation mode 1")}
+    cellLineCounter<-1
+    for (cellLine in rawData$ByCellLine)
+    {
+      dataCounter<-1
+      newData<-data.frame()
+      for(data in cellLine){
+      
+        for(column in 1:ncol(data)){
+          if(column==1){
+            newData[dataCounter,column]=dataCounter
+          }
+          else
+          {
+            newData[dataCounter,column]=mean(data[,column])
+          }
+        }
+      
+        dataCounter<-dataCounter+1  
+      }
+    
+      cellLineRawData[[cellLineCounter]]<-newData
+      cellLineCounter<- cellLineCounter+1
+    }
   }
   
-  if(input.printInfo){
-    print("Separate data by cell line:");
-    for(i in 1:length(input.cellLines)){
-      print(input.cellLines[[i]]$Name);
-      print(input.cellLines[[i]]$PositionOnPate);
-      print(cellLineRawData[[i]]);
-      if(i!=length(input.cellLines)){
-        print("-----------------------------------")
+  if(input.calcMode==2)
+  {
+    if(input.printInfo==TRUE){print("Do calculation mode 2")}
+    cellLineCounter<-1
+    for (cellLine in rawData$ByCellLine){
+      rowCounter<-1
+      newData<-data.frame()
+      for(data in cellLine){
+        for(row in 1:nrow(data)){
+          for(column in 1:ncol(data)){
+            newData[rowCounter,column]=data[row,column]
+          }
+          rowCounter<-rowCounter+1
+        }
       }
+      cellLineRawData[[cellLineCounter]]<-newData
+      cellLineCounter<- cellLineCounter+1
     }
   }
   
   output$cellLineRawData<-cellLineRawData
-  
   cellLineCounter<-1
   cellLineCalculateDoseData <- list()
   cellLineCalculateControllData <- list()
