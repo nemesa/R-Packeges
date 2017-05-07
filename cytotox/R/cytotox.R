@@ -196,7 +196,7 @@ cytotox.Run<-function(input.files
     }
   }
   
-  output$cellLineRawData<-cellLineRawData
+  output$CellLineRawData<-cellLineRawData
   cellLineCounter<-1
   cellLineCalculateDoseData <- list()
   cellLineCalculateControllData <- list()
